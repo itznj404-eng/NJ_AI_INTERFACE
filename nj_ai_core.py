@@ -24,29 +24,41 @@ def load_all_chats():
     return {"Chat 1": []} # Default starting point
 
 # 1.Background
-def get_base64_of_bin_file(bin_file):
-    with open(bin_file, 'rb') as f:
-        data = f.read()
-    return base64.b64encode(data).decode()
-
-def set_png_as_page_bg(bin_file):
-    if os.path.exists(bin_file):
-        bin_str = get_base64_of_bin_file(bin_file)
-        page_bg_img = f'''
+def set_animated_galaxy_bg():
+    st.markdown(
+        """
         <style>
-        .stApp {{
-            background-image: url("data:image/jpg;base64,{bin_str}");
-            background-size: cover;
-            background-attachment: fixed;
-        }}
-        .stChatFloatingInputContainer {{
-            background-color: rgba(0, 0, 0, 0.5);
-        }}
-        </style>
-        '''
-        st.markdown(page_bg_img, unsafe_allow_html=True)
+        .stApp {
+            /* Black background fallback */
+            background-color: black;
 
-set_png_as_page_bg('download.jpg')
+            /* High-quality animated galaxy (slow-moving) */
+            background-image: url("https://i.ibb.co/GshK6g3/gal.gif");
+
+            /* Styling to cover the whole page */
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-position: center;
+        }
+
+        /* Adjusting chat text for visibility against dark bg */
+        .stMarkdown, .stChatFloatingInputContainer {
+            color: white !important;
+        }
+        
+        /* Glassmorphism effect for the input area */
+        .stChatFloatingInputContainer {
+            background-color: rgba(0, 0, 0, 0.7);
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(5px);
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+set_animated_galaxy_bg()
 
 # 2. VOICE 
 def speak(text):
