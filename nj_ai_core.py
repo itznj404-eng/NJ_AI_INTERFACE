@@ -24,41 +24,40 @@ def load_all_chats():
     return {"Chat 1": []} # Default starting point
 
 # 1.Background
-def set_animated_galaxy_bg():
+def set_black_animated_bg():
     st.markdown(
         """
         <style>
         .stApp {
-            /* Black background fallback */
-            background-color: black;
-
-            /* High-quality animated galaxy (slow-moving) */
-            background-image: url("https://i.ibb.co/GshK6g3/gal.gif");
-
-            /* Styling to cover the whole page */
+            background: url("https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJueXF3d3BqZzR4eXJ3eXJ3eXJ3eXJ3eXJ3eXJ3eXJ3JnB0PWFwcCZpPWE/3o7TKVUn7iM8FMEU24/giphy.gif");
             background-size: cover;
-            background-repeat: no-repeat;
-            background-attachment: fixed;
             background-position: center;
+            background-attachment: fixed;
         }
 
-        /* Adjusting chat text for visibility against dark bg */
-        .stMarkdown, .stChatFloatingInputContainer {
-            color: white !important;
+        /* This makes the text readable against the dark galaxy */
+        h1, h2, h3, p, span, .stMarkdown {
+            color: #E0E0E0 !important;
+            text-shadow: 2px 2px 4px #000000;
+        }
+
+        /* Glass effect for the sidebar */
+        [data-testid="stSidebar"] {
+            background-color: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
         }
         
-        /* Glassmorphism effect for the input area */
+        /* Glass effect for the chat input */
         .stChatFloatingInputContainer {
-            background-color: rgba(0, 0, 0, 0.7);
-            border-top: 1px solid rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(5px);
+            background-color: rgba(20, 20, 20, 0.7) !important;
+            backdrop-filter: blur(10px);
         }
         </style>
         """,
         unsafe_allow_html=True
     )
 
-set_animated_galaxy_bg()
+set_black_animated_bg()
 
 # 2. VOICE 
 def speak(text):
