@@ -24,51 +24,43 @@ def load_all_chats():
     return {"Chat 1": []} # Default starting point
 
 # 1.Background
-def set_cyber_black_bg():
-    st.markdown(
-        """
+# --- 2. CUSTOM THEMED BACKGROUND ---
+def set_custom_bg(bin_file):
+    if os.path.exists(bin_file):
+        bin_str = get_base64_of_bin_file(bin_file)
+        page_bg_img = f'''
         <style>
-        /* The main background */
-        .stApp {
-            background-color: #000000;
-            background-image: url("https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3ZueXByZzR4eXJ3eXJ3eXJ3eXJ3eXJ3eXJ3eXJ3JnB0PWFwcCZpPWE/o0vwzuFwCGAFO/giphy.gif");
+        .stApp {{
+            background-image: url("data:image/jpg;base64,{bin_str}");
             background-size: cover;
-            background-position: center;
             background-attachment: fixed;
-        }
+            background-position: center;
+        }}
 
-        /* Making all text White/Grey for contrast */
-        h1, h2, h3, p, span, .stMarkdown {
+        /* Making text bright and readable against the dark purple/blue */
+        h1, h2, h3, p, span, .stMarkdown {{
             color: #ffffff !important;
-            font-family: 'Courier New', Courier, monospace;
-            text-shadow: 0px 0px 8px #000000;
-        }
+            text-shadow: 2px 2px 8px #000000;
+        }}
 
-        /* Sidebar Glass Effect */
-        [data-testid="stSidebar"] {
-            background-color: rgba(0, 0, 0, 0.85) !important;
-            border-right: 1px solid #333;
-        }
+        /* Adding a "Glow" effect to the NJ AI title */
+        .stTitle {{
+            color: #d1b3ff !important;
+            text-shadow: 0px 0px 15px #9370db;
+        }}
 
-        /* Chat Input Styling */
-        .stChatFloatingInputContainer {
-            background-color: rgba(15, 15, 15, 0.9) !important;
-            border-top: 1px solid #444;
-            backdrop-filter: blur(10px);
-        }
-        
-        /* Message Bubbles - Extra Dark */
-        [data-testid="stChatMessage"] {
-            background-color: rgba(30, 30, 30, 0.6) !important;
-            border: 1px solid #444;
-            border-radius: 10px;
-        }
+        /* Sidebar and Input Glassmorphism */
+        [data-testid="stSidebar"], .stChatFloatingInputContainer {{
+            background-color: rgba(10, 10, 20, 0.8) !important;
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }}
         </style>
-        """,
-        unsafe_allow_html=True
-    )
+        '''
+        st.markdown(page_bg_img, unsafe_allow_html=True)
 
-set_cyber_black_bg()
+# Call the function with your new file name
+set_custom_bg('LIVE WALLPAPER.jpg')
 
 # 2. VOICE 
 def speak(text):
