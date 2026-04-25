@@ -24,40 +24,51 @@ def load_all_chats():
     return {"Chat 1": []} # Default starting point
 
 # 1.Background
-def set_black_animated_bg():
+def set_cyber_black_bg():
     st.markdown(
         """
         <style>
+        /* The main background */
         .stApp {
-            background: url("https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJueXF3d3BqZzR4eXJ3eXJ3eXJ3eXJ3eXJ3eXJ3eXJ3JnB0PWFwcCZpPWE/3o7TKVUn7iM8FMEU24/giphy.gif");
+            background-color: #000000;
+            background-image: url("https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3ZueXByZzR4eXJ3eXJ3eXJ3eXJ3eXJ3eXJ3eXJ3JnB0PWFwcCZpPWE/o0vwzuFwCGAFO/giphy.gif");
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
         }
 
-        /* This makes the text readable against the dark galaxy */
+        /* Making all text White/Grey for contrast */
         h1, h2, h3, p, span, .stMarkdown {
-            color: #E0E0E0 !important;
-            text-shadow: 2px 2px 4px #000000;
+            color: #ffffff !important;
+            font-family: 'Courier New', Courier, monospace;
+            text-shadow: 0px 0px 8px #000000;
         }
 
-        /* Glass effect for the sidebar */
+        /* Sidebar Glass Effect */
         [data-testid="stSidebar"] {
-            background-color: rgba(0, 0, 0, 0.8);
+            background-color: rgba(0, 0, 0, 0.85) !important;
+            border-right: 1px solid #333;
+        }
+
+        /* Chat Input Styling */
+        .stChatFloatingInputContainer {
+            background-color: rgba(15, 15, 15, 0.9) !important;
+            border-top: 1px solid #444;
             backdrop-filter: blur(10px);
         }
         
-        /* Glass effect for the chat input */
-        .stChatFloatingInputContainer {
-            background-color: rgba(20, 20, 20, 0.7) !important;
-            backdrop-filter: blur(10px);
+        /* Message Bubbles - Extra Dark */
+        [data-testid="stChatMessage"] {
+            background-color: rgba(30, 30, 30, 0.6) !important;
+            border: 1px solid #444;
+            border-radius: 10px;
         }
         </style>
         """,
         unsafe_allow_html=True
     )
 
-set_black_animated_bg()
+set_cyber_black_bg()
 
 # 2. VOICE 
 def speak(text):
