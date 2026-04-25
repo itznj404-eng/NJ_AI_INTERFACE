@@ -86,11 +86,20 @@ def set_pro_layout(bin_file):
 set_pro_layout('FullLogo.jpg')
 
 # --- 3. BROWSER VOICE ---
+# --- 3. AUTO-LANGUAGE BROWSER VOICE ---
 def speak_in_browser(text):
+    # Detect if Malayalam characters are in the text
+    import re
+    is_malayalam = bool(re.search(r'[\u0d00-\u0d7f]', text))
+    lang_code = "ml-IN" if is_malayalam else "en-US"
+    
     clean_text = text.replace("'", "\\'").replace("\n", " ")
     js_code = f"""
         <script>
+        window.speechSynthesis.cancel(); // Stop any current speaking
         var msg = new SpeechSynthesisUtterance('{clean_text}');
+        msg.lang = '{lang_code}';
+        msg.rate = 0.9; // Malayalam sounds better slightly slower
         window.speechSynthesis.speak(msg);
         </script>
     """
