@@ -62,11 +62,6 @@ def speak(text):
 #  3. THE BRAIN & MEMORY SETUP
 client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
-
-if "messages" not in st.session_state:
-   st.session_state.messages = load_chat_history() 
-
-
 if 'booted' not in st.session_state:
     speak("Core initialized. Standing by.")
     st.session_state.booted = True
