@@ -60,7 +60,7 @@ def set_custom_bg(bin_file):
         st.markdown(page_bg_img, unsafe_allow_html=True)
 
 # Call the function with your new file name
-set_custom_bg('LIVE WALLPAPER.jpg')
+set_custom_bg('FullLogo.jpg')
 
 # 2. VOICE 
 def speak(text):
