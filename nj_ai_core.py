@@ -24,38 +24,86 @@ def load_all_chats():
     return {"Chat 1": []}
 
 # --- 2. BACKGROUND SETUP ---
+# --- 2. PRO LAYOUT & BACKGROUND SETUP ---
 def get_base64_of_bin_file(bin_file):
     with open(bin_file, 'rb') as f:
         data = f.read()
     return base64.b64encode(data).decode()
 
-def set_custom_bg(bin_file):
+def set_pro_layout(bin_file):
     if os.path.exists(bin_file):
         bin_str = get_base64_of_bin_file(bin_file)
         page_bg_img = f'''
         <style>
+        /* 1. Background */
         .stApp {{
             background-image: url("data:image/jpg;base64,{bin_str}");
             background-size: cover;
             background-attachment: fixed;
-            background-position: center;
         }}
-        /* Ensure text is readable on the background */
-        h1, h2, h3, p, span, .stMarkdown {{
+
+        /* 2. Main Chat Container (Centers the chat like ChatGPT) */
+        .block-container {{
+            max-width: 800px;
+            padding-top: 2rem;
+        }}
+
+        /* 3. Chat Message Bubbles */
+        [data-testid="stChatMessage"] {{
+            background-color: rgba(255, 255, 255, 0.05) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            margin-bottom: 10px;
+            backdrop-filter: blur(5px);
+        }}
+
+        /* 4. Chat Input Bar */
+        .stChatFloatingInputContainer {{
+            background-color: rgba(0, 0, 0, 0.6) !important;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            padding-bottom: 20px;
+        }}
+
+        /* 5. Clean Text styling */
+        h1, h2, h3, p, span {{
             color: #ffffff !important;
-            text-shadow: 2px 2px 8px #000000;
+            font-family: 'Inter', sans-serif;
         }}
-        [data-testid="stSidebar"], .stChatFloatingInputContainer {{
-            background-color: rgba(0, 0, 0, 0.7) !important;
-            backdrop-filter: blur(10px);
-        }}
+        
+        /* Hide Streamlit branding for a cleaner look */
+        #MainMenu, footer, header {{visibility: hidden;}}
         </style>
         '''
         st.markdown(page_bg_img, unsafe_allow_html=True)
 
-# Calling the function with your new file
-set_custom_bg('FullLogo.jpg')
+set_pro_layout('FullLogo.jpg')
 
+# ... (Keep Sections 3, 4, and 5 the same) ...
+
+# --- 6. MODERN COMMAND CENTER ---
+st.markdown("<h1 style='text-align: center;'>NJ AI</h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; opacity: 0.7;'>Advanced Intelligence Interface</p>", unsafe_allow_html=True)
+
+current_session = st.session_state.current_chat
+messages = st.session_state.all_chats[current_session]
+
+# Wrapper for the chat history to keep it tidy
+for i, message in enumerate(messages):
+    with st.chat_message(message["role"]):
+        if '<iframe' in message["content"]:
+            st.markdown(message["content"], unsafe_allow_html=True)
+        else:
+            st.markdown(message["content"])
+            if message["role"] == "assistant" and not '<iframe' in message["content"]:
+                # Small, subtle listen button
+                if st.button(f"🔊", key=f"lis_{current_session}_{i}"):
+                    speak_in_browser(message["content"])
+
+# Bottom Input (Standard Streamlit Chat Input looks like ChatGPT)
+query = st.chat_input("Message NJ AI...")
+
+# ... (Keep the rest of your 'if query:' logic the same) ...
 # --- 3. BROWSER VOICE ---
 def speak_in_browser(text):
     clean_text = text.replace("'", "\\'").replace("\n", " ")
