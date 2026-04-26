@@ -23,25 +23,30 @@ def load_all_chats():
                 return {"Chat 1": []}
     return {"Chat 1": []}
 
-# --- 2. PRO LAYOUT & BACKGROUND SETUP ---
-# --- 2. PLAIN LAYOUT SETUP ---
+# --- 2. PLAIN & FUNCTIONAL LAYOUT ---
 st.markdown(
     """
     <style>
-    /* Centers the chat like ChatGPT without a background image */
+    /* 1. Centers the chat like ChatGPT */
     .block-container {
-        max-width: 850px;
+        max-width: 800px;
         padding-top: 2rem;
     }
-    
-    /* Optional: Keeps the chat bubbles looking clean */
-    [data-testid="stChatMessage"] {
-        border-radius: 15px;
-        margin-bottom: 12px;
+
+    /* 2. FIX: Make header transparent so sidebar arrow is visible */
+    header {
+        background-color: rgba(0,0,0,0) !important;
+        visibility: visible !important;
     }
 
-    /* Hide unnecessary menus */
-    #MainMenu, footer, header {visibility: hidden;}
+    /* 3. Hide only the 'Made with Streamlit' footer and the 3-dot menu */
+    footer {visibility: hidden;}
+    #MainMenu {visibility: hidden;}
+
+    /* 4. Round the chat bubbles for a modern look */
+    [data-testid="stChatMessage"] {
+        border-radius: 15px;
+    }
     </style>
     """,
     unsafe_allow_html=True
