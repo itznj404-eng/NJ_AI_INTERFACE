@@ -150,30 +150,40 @@ with st.sidebar:
             st.warning("You can't delete the only chat left!")
 
 # --- 6. CHAT INTERFACE ---
-st.markdown("<h1 style='text-align: center; margin-bottom: 0;'>NJ AI</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center; opacity: 0.6; margin-top: 0;'>Powering your vision.</p>", unsafe_allow_html=True)
+# --- 6. MODERN COMMAND CENTER ---
+st.markdown("<h1 style='text-align: center;'>NJ AI</h1>", unsafe_allow_html=True)
 
+# 1. Get the current chat name from session state
 current_session = st.session_state.current_chat
+
+# 2. IMPORTANT: Load the messages for THIS specific chat
+# If the chat doesn't exist in memory yet, start it as an empty list
+if current_session not in st.session_state.all_chats:
+    st.session_state.all_chats[current_session] = []
+
 messages = st.session_state.all_chats[current_session]
 
-# Render chat history
+# 3. Render the history for the SELECTED chat
 for i, message in enumerate(messages):
     with st.chat_message(message["role"]):
         if '<iframe' in message["content"]:
             st.markdown(message["content"], unsafe_allow_html=True)
         else:
             st.markdown(message["content"])
+            # The 'Listen' button fix we did earlier
             if message["role"] == "assistant":
-                # The 'key' uses a unique hash to prevent the NameError/DuplicateKeyError
                 unique_key = f"speak_{current_session}_{i}_{len(message['content'])}"
                 if st.button("🔊", key=unique_key):
                     speak_in_browser(message["content"])
 
-# User Input
-query = st.chat_input("Ask NJ AI anything...")
+# 4. Chat Input
+query = st.chat_input("Message NJ AI...")
 
 if query:
+    # Add user message to the SPECIFIC current session
     st.session_state.all_chats[current_session].append({"role": "user", "content": query})
+    
+    # ... (rest of your AI logic) ...
     with st.chat_message("user"):
         st.markdown(query)
 
