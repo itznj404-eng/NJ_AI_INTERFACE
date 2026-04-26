@@ -33,51 +33,48 @@ def set_pro_layout(bin_file):
     if os.path.exists(bin_file):
         bin_str = get_base64_of_bin_file(bin_file)
         page_bg_img = f'''
-        <style>
-        /* Background Image */
-        .stApp {{
+       <style>
+        /* 1. Background Image */
+        .stApp {
             background-image: url("data:image/jpg;base64,{bin_str}");
             background-size: cover;
             background-attachment: fixed;
             background-position: center;
-        }}
+        }
 
-        /* ChatGPT-style Centered Layout */
-        .block-container {{
+        /* 2. ChatGPT-style Centered Layout */
+        .block-container {
             max-width: 850px;
             padding-top: 2rem;
-        }}
+        }
 
-        /* Modern Chat Bubbles */
-        [data-testid="stChatMessage"] {{
+        /* 3. FIX: Show Sidebar Arrow but hide rest of header */
+        header {
+            background-color: rgba(0,0,0,0) !important; /* Transparent background */
+        }
+        
+        /* This hides the "Made with Streamlit" but keeps the sidebar arrow */
+        footer {visibility: hidden;}
+        #MainMenu {visibility: hidden;}
+
+        /* 4. Chat Bubbles & Sidebar */
+        [data-testid="stChatMessage"] {
             background-color: rgba(255, 255, 255, 0.07) !important;
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 15px;
-            margin-bottom: 12px;
             backdrop-filter: blur(8px);
-        }}
+        }
 
-        /* Clean Text styling */
-        h1, h2, h3, p, span, .stMarkdown {{
-            color: #ffffff !important;
-            text-shadow: 1px 1px 5px rgba(0,0,0,0.5);
-        }}
-
-        /* Sticky Chat Input Bar */
-        .stChatFloatingInputContainer {{
-            background-color: rgba(0, 0, 0, 0.5) !important;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(15px);
-        }}
-
-        /* Sidebar Styling */
-        [data-testid="stSidebar"] {{
+        [data-testid="stSidebar"] {
             background-color: rgba(0, 0, 0, 0.8) !important;
             backdrop-filter: blur(10px);
-        }}
+        }
 
-        /* Hide Streamlit elements for cleaner app look */
-        #MainMenu, footer, header {{visibility: hidden;}}
+        /* Input Bar */
+        .stChatFloatingInputContainer {
+            background-color: rgba(0, 0, 0, 0.5) !important;
+            backdrop-filter: blur(15px);
+        }
         </style>
         '''
         st.markdown(page_bg_img, unsafe_allow_html=True)
@@ -120,7 +117,7 @@ if 'booted' not in st.session_state:
 
 # --- 5. SIDEBAR ---
 with st.sidebar:
-    st.markdown("### NJ AI Controls")
+    st.markdown(" NJ AI Controls")
     if st.button("➕ New Conversation"):
         new_id = f"Chat {len(st.session_state.all_chats) + 1}"
         st.session_state.all_chats[new_id] = []
