@@ -32,49 +32,39 @@ def get_base64_of_bin_file(bin_file):
 def set_pro_layout(bin_file):
     if os.path.exists(bin_file):
         bin_str = get_base64_of_bin_file(bin_file)
+        # Note the double {{ }} for CSS and single { } for the variable
         page_bg_img = f'''
-       <style>
+        <style>
         /* 1. Background Image */
-        .stApp {
+        .stApp {{
             background-image: url("data:image/jpg;base64,{bin_str}");
             background-size: cover;
             background-attachment: fixed;
             background-position: center;
-        }
+        }}
 
-        /* 2. ChatGPT-style Centered Layout */
-        .block-container {
+        /* 2. Layout & Spacing */
+        .block-container {{
             max-width: 850px;
             padding-top: 2rem;
-        }
+        }}
 
-        /* 3. FIX: Show Sidebar Arrow but hide rest of header */
-        header {
-            background-color: rgba(0,0,0,0) !important; /* Transparent background */
-        }
+        /* 3. Sidebar Arrow Fix */
+        header {{
+            background-color: rgba(0,0,0,0) !important;
+        }}
         
-        /* This hides the "Made with Streamlit" but keeps the sidebar arrow */
-        footer {visibility: hidden;}
-        #MainMenu {visibility: hidden;}
+        footer, #MainMenu {{
+            visibility: hidden;
+        }}
 
-        /* 4. Chat Bubbles & Sidebar */
-        [data-testid="stChatMessage"] {
+        /* 4. Chat Bubbles */
+        [data-testid="stChatMessage"] {{
             background-color: rgba(255, 255, 255, 0.07) !important;
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 15px;
             backdrop-filter: blur(8px);
-        }
-
-        [data-testid="stSidebar"] {
-            background-color: rgba(0, 0, 0, 0.8) !important;
-            backdrop-filter: blur(10px);
-        }
-
-        /* Input Bar */
-        .stChatFloatingInputContainer {
-            background-color: rgba(0, 0, 0, 0.5) !important;
-            backdrop-filter: blur(15px);
-        }
+        }}
         </style>
         '''
         st.markdown(page_bg_img, unsafe_allow_html=True)
