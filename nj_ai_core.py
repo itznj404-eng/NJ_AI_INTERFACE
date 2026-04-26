@@ -8,9 +8,9 @@ from youtube_search import YoutubeSearch
 import json 
 
 st.set_page_config(
-    page_title="NJ AI",        # The name that shows on the tab and app
-    page_icon="FullLogo.jpg",  # This sets your logo as the app icon
-    layout="wide"              # Optional: helps with tablet screens
+    page_title="NJ AI",
+    page_icon="FullLogo.jpg",
+    layout="centered"
 )
 
 # --- 1. MEMORY FUNCTIONS ---
