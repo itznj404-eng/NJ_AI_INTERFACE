@@ -7,6 +7,12 @@ from groq import Groq
 from youtube_search import YoutubeSearch
 import json 
 
+st.set_page_config(
+    page_title="NJ AI",        # The name that shows on the tab and app
+    page_icon="FullLogo.jpg",  # This sets your logo as the app icon
+    layout="wide"              # Optional: helps with tablet screens
+)
+
 # --- 1. MEMORY FUNCTIONS ---
 CHAT_DATA_FILE = "all_chats.json"
 
