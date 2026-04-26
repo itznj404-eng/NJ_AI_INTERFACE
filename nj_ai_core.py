@@ -108,15 +108,46 @@ if 'booted' not in st.session_state:
 # --- 5. SIDEBAR ---
 with st.sidebar:
     st.markdown(" NJ AI Controls")
-    if st.button("➕ New Conversation"):
+    
+    # Button to create a new chat
+    if st.button("➕ New Conversation", use_container_width=True):
         new_id = f"Chat {len(st.session_state.all_chats) + 1}"
         st.session_state.all_chats[new_id] = []
         st.session_state.current_chat = new_id
         save_all_chats(st.session_state.all_chats)
         st.rerun()
 
+    st.divider()
+
+    # Dropdown to see and switch between previous chats
     chat_list = list(st.session_state.all_chats.keys())
-    st.session_state.current_chat = st.selectbox("Select History:", chat_list, index=chat_list.index(st.session_state.current_chat))
+    if st.session_state.current_chat not in chat_list:
+        st.session_state.current_chat = chat_list[-1]
+        
+    selected_chat = st.selectbox(
+        "Your Chat History:", 
+        chat_list, 
+        index=chat_list.index(st.session_state.current_chat)
+    )
+    
+    # Update current chat if changed in dropdown
+    if selected_chat != st.session_state.current_chat:
+        st.session_state.current_chat = selected_chat
+        st.rerun()
+
+    st.divider()
+
+    # THE DELETE OPTION
+    if st.button("🗑️ Delete This Chat", use_container_width=True, type="secondary"):
+        if len(st.session_state.all_chats) > 1:
+            # Remove the current chat from memory
+            del st.session_state.all_chats[st.session_state.current_chat]
+            # Set current chat to the one remaining
+            st.session_state.current_chat = list(st.session_state.all_chats.keys())[0]
+            save_all_chats(st.session_state.all_chats)
+            st.rerun()
+        else:
+            st.warning("You can't delete the only chat left!")
 
 # --- 6. CHAT INTERFACE ---
 st.markdown("<h1 style='text-align: center; margin-bottom: 0;'>NJ AI</h1>", unsafe_allow_html=True)
