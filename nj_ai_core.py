@@ -9,7 +9,7 @@ import json
 
 st.set_page_config(
     page_title="NJ AI",
-    page_icon="😎",
+    page_icon="FullLogo.ico",
     layout="centered"
 )
 
