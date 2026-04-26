@@ -24,54 +24,28 @@ def load_all_chats():
     return {"Chat 1": []}
 
 # --- 2. PRO LAYOUT & BACKGROUND SETUP ---
-def get_base64_of_bin_file(bin_file):
-    with open(bin_file, 'rb') as f:
-        data = f.read()
-    return base64.b64encode(data).decode()
+# --- 2. PLAIN LAYOUT SETUP ---
+st.markdown(
+    """
+    <style>
+    /* Centers the chat like ChatGPT without a background image */
+    .block-container {
+        max-width: 850px;
+        padding-top: 2rem;
+    }
+    
+    /* Optional: Keeps the chat bubbles looking clean */
+    [data-testid="stChatMessage"] {
+        border-radius: 15px;
+        margin-bottom: 12px;
+    }
 
-def set_pro_layout(bin_file):
-    if os.path.exists(bin_file):
-        bin_str = get_base64_of_bin_file(bin_file)
-        # Note the double {{ }} for CSS and single { } for the variable
-        page_bg_img = f'''
-        <style>
-        /* 1. Background Image */
-        .stApp {{
-            background-image: url("data:image/jpg;base64,{bin_str}");
-            background-size: cover;
-            background-attachment: fixed;
-            background-position: center;
-        }}
-
-        /* 2. Layout & Spacing */
-        .block-container {{
-            max-width: 850px;
-            padding-top: 2rem;
-        }}
-
-        /* 3. Sidebar Arrow Fix */
-        header {{
-            background-color: rgba(0,0,0,0) !important;
-        }}
-        
-        footer, #MainMenu {{
-            visibility: hidden;
-        }}
-
-        /* 4. Chat Bubbles */
-        [data-testid="stChatMessage"] {{
-            background-color: rgba(255, 255, 255, 0.07) !important;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            backdrop-filter: blur(8px);
-        }}
-        </style>
-        '''
-        st.markdown(page_bg_img, unsafe_allow_html=True)
-
-# Make sure FullLogo.jpg is uploaded to your GitHub!
-set_pro_layout('FullLogo.jpg')
-
+    /* Hide unnecessary menus */
+    #MainMenu, footer, header {visibility: hidden;}
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 # --- 3. BROWSER VOICE ---
 # --- 3. AUTO-LANGUAGE BROWSER VOICE ---
 def speak_in_browser(text):
