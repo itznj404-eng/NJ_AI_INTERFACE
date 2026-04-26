@@ -13,24 +13,41 @@ st.set_page_config(
     layout="centered"
 )
 
-# --- MANIFEST / PWA FIX ---
-# This forces the browser to show "NJ AI" during installation
+# --- THE BRUTE FORCE PWA FIX ---
 st.markdown(
-    f"""
+    """
     <script>
-    var link = document.querySelector("link[rel*='icon']") || document.createElement('link');
-    link.type = 'image/x-icon';
-    link.rel = 'shortcut icon';
-    link.href = 'FullLogo.ico';
-    document.getElementsByTagName('head')[0].appendChild(link);
-    
-    // This changes the name the browser sees for the 'Install' prompt
+    // 1. Force the title to NJ AI
     document.title = "NJ AI";
+
+    // 2. Override the manifest (This is the trick!)
+    const manifest = {
+        "name": "NJ AI",
+        "short_name": "NJ AI",
+        "icons": [{ "src": "FullLogo.ico", "sizes": "192x192 256x256 512x512", "type": "image/x-icon" }],
+        "start_url": ".",
+        "display": "standalone",
+        "theme_color": "#000000",
+        "background_color": "#000000"
+    };
+    const stringManifest = JSON.stringify(manifest);
+    const blob = new Blob([stringManifest], {type: 'application/json'});
+    const manifestURL = URL.createObjectURL(blob);
+    
+    // Find old manifest and replace it
+    var oldManifest = document.querySelector('link[rel="manifest"]');
+    if (oldManifest) {
+        oldManifest.setAttribute('href', manifestURL);
+    } else {
+        var link = document.createElement('link');
+        link.rel = 'manifest';
+        link.href = manifestURL;
+        document.head.appendChild(link);
+    }
     </script>
     """,
     unsafe_allow_html=True
 )
-
 # --- 1. MEMORY FUNCTIONS ---
 CHAT_DATA_FILE = "all_chats.json"
 
