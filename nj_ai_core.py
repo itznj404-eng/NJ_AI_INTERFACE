@@ -87,13 +87,11 @@ def load_all_chats():
 
 # --- 2. BROWSER VOICE FUNCTION ---
 def speak_in_browser(text):
-    # Remove HTML tags if present before sending to TTS
     clean_text_no_html = re.sub(r'<[^<]+?>', '', text)
     
     is_malayalam = bool(re.search(r'[\u0d00-\u0d7f]', clean_text_no_html))
     lang_code = "ml-IN" if is_malayalam else "en-US"
     
-    # Safe JSON string encoding for JS execution
     safe_js_text = json.dumps(clean_text_no_html)
     
     js_code = f"""
@@ -114,9 +112,10 @@ if "all_chats" not in st.session_state:
 if "current_chat" not in st.session_state:
     st.session_state.current_chat = list(st.session_state.all_chats.keys())[-1]
 
-# >>> THIS IS THE API KEY LINE <<<
-# --- 4. BRAIN SETUP ---
+# --- GROQ CLIENT SETUP ---
+# Replace with your key directly OR use st.secrets.get("GROQ_API_KEY", "")
 client = Groq(api_key=st.secrets.get("GROQ_API_KEY", ""))
+
 if 'booted' not in st.session_state:
     speak_in_browser("System online.")
     st.session_state.booted = True
@@ -182,28 +181,23 @@ for i, message in enumerate(messages):
 query = st.chat_input("Message NJ AI...")
 
 if query:
-    # 1. Store and display user input
     st.session_state.all_chats[current_session].append({"role": "user", "content": query})
     with st.chat_message("user"):
         st.markdown(query)
 
-    # 2. Process Assistant Response
     with st.chat_message("assistant"):
         response_text = ""
         q_lower = query.lower().strip()
 
-        # Command: Status
         if "status" in q_lower:
             response_text = f"Systems nominal. Running TensorFlow version `{tf.__version__}`."
             st.markdown(response_text)
 
-        # Command: Time
         elif "time" in q_lower:
             now_str = datetime.datetime.now().strftime('%I:%M %p')
             response_text = f"The current time is **{now_str}**."
             st.markdown(response_text)
 
-        # Command: YouTube Play
         elif q_lower.startswith("play "):
             song = q_lower.replace("play", "", 1).strip()
             try:
@@ -221,12 +215,10 @@ if query:
                 response_text = f"There was an error querying YouTube: `{e}`"
                 st.markdown(response_text)
 
-        # Default: Fallback to Groq Llama 3
         else:
             try:
                 history_chain = [{"role": "system", "content": "You are NJ AI, a high-performance assistant. Be concise and professional."}]
                 
-                # Context limit (last 5 messages)
                 for m in messages[-5:]:
                     if '<iframe' not in m["content"]:
                         history_chain.append({"role": m["role"], "content": m["content"]})
@@ -235,7 +227,7 @@ if query:
 
                 chat_completion = client.chat.completions.create(
                     messages=history_chain,
-                    model="llama-3.3-70b-versatile",
+                    model="llama3-70b-8192",
                 )
                 response_text = chat_completion.choices[0].message.content
                 st.markdown(response_text)
@@ -244,9 +236,7 @@ if query:
                 response_text = f"I couldn't reach the backend LLM service."
                 st.error(f"Error: {e}")
 
-        # 3. Store assistant response
         st.session_state.all_chats[current_session].append({"role": "assistant", "content": response_text})
         save_all_chats(st.session_state.all_chats)
         
-        # Trigger TTS for immediate feedback
         speak_in_browser(response_text)
