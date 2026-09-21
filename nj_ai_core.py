@@ -113,7 +113,7 @@ if "current_chat" not in st.session_state:
     st.session_state.current_chat = list(st.session_state.all_chats.keys())[-1]
 
 # --- GROQ CLIENT SETUP ---
-# Replace with your key directly OR use st.secrets.get("GROQ_API_KEY", "")
+# Replace with your API key string directly if not using st.secrets
 client = Groq(api_key=st.secrets.get("GROQ_API_KEY", ""))
 
 if 'booted' not in st.session_state:
@@ -227,7 +227,7 @@ if query:
 
                 chat_completion = client.chat.completions.create(
                     messages=history_chain,
-                    model="llama3-70b-8192",
+                    model="llama-3.1-8b-instant",
                 )
                 response_text = chat_completion.choices[0].message.content
                 st.markdown(response_text)
