@@ -1,26 +1,25 @@
-import streamlit as st
 import base64
-import os
-import tensorflow as tf
 import datetime
-from groq import Groq  
+import json
+import os
+import re
+import streamlit as st
+import tensorflow as tf
+from groq import Groq
 from youtube_search import YoutubeSearch
-import json 
 
+# --- PAGE CONFIG ---
 st.set_page_config(
     page_title="NJ AI",
     page_icon="FullLogo.ico",
     layout="centered"
 )
 
-# --- THE BRUTE FORCE PWA FIX ---
+# --- PWA MANIFEST INJECTION ---
 st.markdown(
     """
     <script>
-    // 1. Force the title to NJ AI
     document.title = "NJ AI";
-
-    // 2. Override the manifest (This is the trick!)
     const manifest = {
         "name": "NJ AI",
         "short_name": "NJ AI",
@@ -34,7 +33,6 @@ st.markdown(
     const blob = new Blob([stringManifest], {type: 'application/json'});
     const manifestURL = URL.createObjectURL(blob);
     
-    // Find old manifest and replace it
     var oldManifest = document.querySelector('link[rel="manifest"]');
     if (oldManifest) {
         oldManifest.setAttribute('href', manifestURL);
@@ -48,43 +46,21 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-# --- 1. MEMORY FUNCTIONS ---
-CHAT_DATA_FILE = "all_chats.json"
 
-def save_all_chats(all_chats):
-    with open(CHAT_DATA_FILE, "w") as f:
-        json.dump(all_chats, f)
-
-def load_all_chats():
-    if os.path.exists(CHAT_DATA_FILE):
-        with open(CHAT_DATA_FILE, "r") as f:
-            try:
-                return json.load(f)
-            except:
-                return {"Chat 1": []}
-    return {"Chat 1": []}
-
-# --- 2. PLAIN & FUNCTIONAL LAYOUT ---
+# --- CSS STYLING ---
 st.markdown(
     """
     <style>
-    /* 1. Centers the chat like ChatGPT */
     .block-container {
         max-width: 800px;
         padding-top: 2rem;
     }
-
-    /* 2. FIX: Make header transparent so sidebar arrow is visible */
     header {
         background-color: rgba(0,0,0,0) !important;
         visibility: visible !important;
     }
-
-    /* 3. Hide only the 'Made with Streamlit' footer and the 3-dot menu */
     footer {visibility: hidden;}
     #MainMenu {visibility: hidden;}
-
-    /* 4. Round the chat bubbles for a modern look */
     [data-testid="stChatMessage"] {
         border-radius: 15px;
     }
@@ -92,44 +68,63 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-# --- 3. BROWSER VOICE ---
-# --- 3. AUTO-LANGUAGE BROWSER VOICE ---
+
+# --- 1. PERSISTENCE MEMORY FUNCTIONS ---
+CHAT_DATA_FILE = "all_chats.json"
+
+def save_all_chats(all_chats):
+    with open(CHAT_DATA_FILE, "w", encoding="utf-8") as f:
+        json.dump(all_chats, f, indent=2)
+
+def load_all_chats():
+    if os.path.exists(CHAT_DATA_FILE):
+        try:
+            with open(CHAT_DATA_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            return {"Chat 1": []}
+    return {"Chat 1": []}
+
+# --- 2. BROWSER VOICE FUNCTION ---
 def speak_in_browser(text):
-    # Detect if Malayalam characters are in the text
-    import re
-    is_malayalam = bool(re.search(r'[\u0d00-\u0d7f]', text))
+    # Remove HTML tags if present before sending to TTS
+    clean_text_no_html = re.sub(r'<[^<]+?>', '', text)
+    
+    is_malayalam = bool(re.search(r'[\u0d00-\u0d7f]', clean_text_no_html))
     lang_code = "ml-IN" if is_malayalam else "en-US"
     
-    clean_text = text.replace("'", "\\'").replace("\n", " ")
+    # Safe JSON string encoding for JS execution
+    safe_js_text = json.dumps(clean_text_no_html)
+    
     js_code = f"""
         <script>
-        window.speechSynthesis.cancel(); // Stop any current speaking
-        var msg = new SpeechSynthesisUtterance('{clean_text}');
+        window.speechSynthesis.cancel();
+        var msg = new SpeechSynthesisUtterance({safe_js_text});
         msg.lang = '{lang_code}';
-        msg.rate = 0.9; // Malayalam sounds better slightly slower
+        msg.rate = 0.9;
         window.speechSynthesis.speak(msg);
         </script>
     """
     st.components.v1.html(js_code, height=0)
 
-# --- 4. BRAIN SETUP ---
-client = Groq(api_key=st.secrets["GROQ_API_KEY"])
-
+# --- 3. SESSION INITIALIZATION ---
 if "all_chats" not in st.session_state:
     st.session_state.all_chats = load_all_chats()
 
 if "current_chat" not in st.session_state:
     st.session_state.current_chat = list(st.session_state.all_chats.keys())[-1]
 
+# >>> THIS IS THE API KEY LINE <<<
+# --- 4. BRAIN SETUP ---
+client = Groq(api_key=st.secrets.get("GROQ_API_KEY", ""))
 if 'booted' not in st.session_state:
     speak_in_browser("System online.")
     st.session_state.booted = True
 
-# --- 5. SIDEBAR ---
+# --- 4. SIDEBAR ---
 with st.sidebar:
-    st.markdown(" NJ AI Controls")
+    st.markdown("### ⚙️ NJ AI Controls")
     
-    # Button to create a new chat
     if st.button("➕ New Conversation", use_container_width=True):
         new_id = f"Chat {len(st.session_state.all_chats) + 1}"
         st.session_state.all_chats[new_id] = []
@@ -139,7 +134,6 @@ with st.sidebar:
 
     st.divider()
 
-    # Dropdown to see and switch between previous chats
     chat_list = list(st.session_state.all_chats.keys())
     if st.session_state.current_chat not in chat_list:
         st.session_state.current_chat = chat_list[-1]
@@ -150,92 +144,89 @@ with st.sidebar:
         index=chat_list.index(st.session_state.current_chat)
     )
     
-    # Update current chat if changed in dropdown
     if selected_chat != st.session_state.current_chat:
         st.session_state.current_chat = selected_chat
         st.rerun()
 
     st.divider()
 
-    # THE DELETE OPTION
     if st.button("🗑️ Delete This Chat", use_container_width=True, type="secondary"):
         if len(st.session_state.all_chats) > 1:
-            # Remove the current chat from memory
             del st.session_state.all_chats[st.session_state.current_chat]
-            # Set current chat to the one remaining
             st.session_state.current_chat = list(st.session_state.all_chats.keys())[0]
             save_all_chats(st.session_state.all_chats)
             st.rerun()
         else:
-            st.warning("You can't delete the only chat left!")
+            st.warning("You can't delete the only remaining chat!")
 
-# --- 6. CHAT INTERFACE ---
-# --- 6. MODERN COMMAND CENTER ---
+# --- 5. MAIN CHAT INTERFACE ---
 st.markdown("<h1 style='text-align: center;'>NJ AI</h1>", unsafe_allow_html=True)
 
-# 1. Get the current chat name from session state
 current_session = st.session_state.current_chat
-
-# 2. IMPORTANT: Load the messages for THIS specific chat
-# If the chat doesn't exist in memory yet, start it as an empty list
 if current_session not in st.session_state.all_chats:
     st.session_state.all_chats[current_session] = []
 
 messages = st.session_state.all_chats[current_session]
 
-# 3. Render the history for the SELECTED chat
+# Render history
 for i, message in enumerate(messages):
     with st.chat_message(message["role"]):
-        if '<iframe' in message["content"]:
-            st.markdown(message["content"], unsafe_allow_html=True)
-        else:
-            st.markdown(message["content"])
-            # The 'Listen' button fix we did earlier
-            if message["role"] == "assistant":
-                unique_key = f"speak_{current_session}_{i}_{len(message['content'])}"
-                if st.button("🔊", key=unique_key):
-                    speak_in_browser(message["content"])
+        st.markdown(message["content"], unsafe_allow_html=True)
+        
+        if message["role"] == "assistant":
+            unique_key = f"speak_{current_session}_{i}"
+            if st.button("🔊", key=unique_key):
+                speak_in_browser(message["content"])
 
-# 4. Chat Input
+# --- 6. USER INPUT & RESPONSE LOGIC ---
 query = st.chat_input("Message NJ AI...")
 
 if query:
-    # Add user message to the SPECIFIC current session
+    # 1. Store and display user input
     st.session_state.all_chats[current_session].append({"role": "user", "content": query})
-    
-    # ... (rest of your AI logic) ...
     with st.chat_message("user"):
         st.markdown(query)
 
+    # 2. Process Assistant Response
     with st.chat_message("assistant"):
         response_text = ""
-        
-        # Built-in Logic
-        if "status" in query.lower():
-            response_text = f"Systems nominal. Running TensorFlow {tf.__version__}."
-            st.write(response_text)
-        elif "time" in query.lower():
-            response_text = f"The current time is {datetime.datetime.now().strftime('%I:%M %p')}."
-            st.write(response_text)
-        elif "play" in query.lower():
-            song = query.lower().replace("play", "").strip()
+        q_lower = query.lower().strip()
+
+        # Command: Status
+        if "status" in q_lower:
+            response_text = f"Systems nominal. Running TensorFlow version `{tf.__version__}`."
+            st.markdown(response_text)
+
+        # Command: Time
+        elif "time" in q_lower:
+            now_str = datetime.datetime.now().strftime('%I:%M %p')
+            response_text = f"The current time is **{now_str}**."
+            st.markdown(response_text)
+
+        # Command: YouTube Play
+        elif q_lower.startswith("play "):
+            song = q_lower.replace("play", "", 1).strip()
             try:
                 results = YoutubeSearch(song, max_results=1).to_dict()
                 if results:
                     v_id = results[0]['id']
+                    v_title = results[0]['title']
                     iframe = f'<iframe width="100%" height="315" src="https://www.youtube.com/embed/{v_id}?autoplay=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>'
-                    st.markdown(iframe, unsafe_allow_html=True)
-                    response_text = f"Now playing {results[0]['title']}. \n\n {iframe}"
+                    response_text = f"Now playing **{v_title}**:\n\n{iframe}"
+                    st.markdown(response_text, unsafe_allow_html=True)
                 else:
-                    response_text = "Sorry, I couldn't find that video."
-            except:
-                response_text = "There was an error accessing YouTube."
+                    response_text = "Sorry, I couldn't find any video for that search."
+                    st.markdown(response_text)
+            except Exception as e:
+                response_text = f"There was an error querying YouTube: `{e}`"
+                st.markdown(response_text)
 
-        # AI Groq Logic
-        if not response_text:
+        # Default: Fallback to Groq Llama 3
+        else:
             try:
-                # Provide context from the last 5 messages
                 history_chain = [{"role": "system", "content": "You are NJ AI, a high-performance assistant. Be concise and professional."}]
+                
+                # Context limit (last 5 messages)
                 for m in messages[-5:]:
                     if '<iframe' not in m["content"]:
                         history_chain.append({"role": m["role"], "content": m["content"]})
@@ -248,12 +239,14 @@ if query:
                 )
                 response_text = chat_completion.choices[0].message.content
                 st.markdown(response_text)
-            except Exception as e:
-                response_text = "I'm having trouble connecting to my brain right now."
-                st.error(f"Error: {e}")
-        
-        st.session_state.all_chats[current_session].append({"role": "assistant", "content": response_text})
-        speak_in_browser(response_text)
 
-    save_all_chats(st.session_state.all_chats)
-    st.rerun()
+            except Exception as e:
+                response_text = f"I couldn't reach the backend LLM service."
+                st.error(f"Error: {e}")
+
+        # 3. Store assistant response
+        st.session_state.all_chats[current_session].append({"role": "assistant", "content": response_text})
+        save_all_chats(st.session_state.all_chats)
+        
+        # Trigger TTS for immediate feedback
+        speak_in_browser(response_text)
